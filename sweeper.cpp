@@ -15,14 +15,14 @@
 #define WIDTH 16            // num of squares vertically
 #define HEIGHT 16           // num of squares horizontally
 
-#define DIFFICULTY 8        // difficulty, is subtracted from the max range of the rng to make the 
+#define DIFFICULTY 0        // difficulty, is subtracted from the max range of the rng to make the 
                             // chance of a given square being a mine higher. higher nums are harder.
-                            // default chance is 1/15, medium diff is 1/12, hard is 1/8.
+                            // default chance is 1/10, medium diff is 1/7, hard is 1/4.
 #define BOTTOMLEFT WIDTH*HEIGHT-WIDTH
 
 std::random_device rnd;
 std::mt19937 rng(rnd());
-std::uniform_int_distribution<std::mt19937::result_type> dist(1, (15 - DIFFICULTY));
+std::uniform_int_distribution<std::mt19937::result_type> dist(1, (10 - DIFFICULTY));
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ random num gen thing for mines
 
 struct Square {                 // template for a square
@@ -51,116 +51,6 @@ int getXCoordinateFromIndex(int index) {    // pretty self explanatory, I'd have
 
     return xCoordinate;
 }
-
-/*
-(relating to function below)
-
-this one's a bit hard to explain. the X and Y start coordinates are where the for-loops will
-start looking for mines, which (when no sides are occluded) the defualt values are (-1, -1),
-relative to the index of the square we're checking from. imagine placing a 3*3 square on top of
-the centre square, where the centre of the 3*3 lines up with the square we're checking around
-for mines in the first place. the top left square is (-1, -1), the middle square is (0, 0), and
-the bottom right square is (1, 1).
-
-like this:
-           0  ---> X
-          | +-----+-----+-----+
-          | |-1,-1|-1,0 |-1,1 |
-         \/ +-----+-----+-----+
-          Y | 0,-1| MID | 0,1 | where MID is the square we're checking from.
-            +-----+-----+-----+
-            | 1,-1| 1,0 | 1,1 |
-            +-----+-----+-----+
-
-the way the for-loops actually check the 1-dimensional arrray as if it's 2-dimensional is by
-having the X value increase by 1, and the Y value increase by WIDTH. for example, let's take a
-5*6 (WIDTH*HEIGHT) square as the size of our board. (I know I use both (y, x) and (x, y) in
-this project, uhhhh idk, get used to it) the board looks like this:
-
-            0 ------------------------------> X
-            | +-----+-----+-----+-----+-----+
-            | |  0  |  1  |  2  |  3  |  4  |
-            | +-----+-----+-----+-----+-----+
-            | |  5  |  6  |  7  |  8  | ... |
-            | +-----+-----+-----+-----+-----+
-            | |     |     |     |     |     |
-            | +-----+-----+-----+-----+-----+
-            | |     |     |     |     |     |
-            | +-----+-----+-----+-----+-----+
-            | |     |     |     |     |     |
-            | +-----+-----+-----+-----+-----+
-            | | ... | 26  | 27  | 28  | 29  |
-           \/ +-----+-----+-----+-----+-----+
-            Y
-
-but, to the program, all the squares are actually stored in a 1-dimensional array as follows:
-
-               0 ---------------------------------------.........-------> INDEX
-            +-----+-----+-----+-----+-----+-----+-----+-...   ...-+-----+
-            |  0  |  1  |  2  |  3  |  4  |  5  |  6  | ...   ... | 29  |
-            +-----+-----+-----+-----+-----+-----+-----+-...   ...-+-----+
-
-to access the item below square 1 on the 2D board, you would just add WIDTH to the index of the
-square you're going from. now, notice that the INDEX and the COORDINATES are completely
-separate. I've made a function to convert from index to coordinates, but this is more for the
-ease of not having to do the conversions in my head manually, for logic purposes. I can't do any 
-operations with the X and Y coordinates of the square. since they are stored in the array, I 
-have to access them via their index.
-
-using the method explained earlier, if we take square[6] as the MID square, then to access the
-top left square relative to MID, we'd subtract WIDTH from the index, (putting us at square[1]),
-and then subtract 1, to get square[0]. this is the top left square relative to MID, in a 3*3
-square around MID. graphical representation:
-
-    (the square brackets represents which square we are on at this point in time)
-
-                -1     0     1
-            +-----+-----+-----+-...
-         -1 |  0  |  1  |  2  |
-            +-----+-----+-----+-...
-          0 |  5  | [6] |  7  |
-            +-----+-----+-----+-...
-          1 | 10  | 11  | 12  |
-            +-----+-----+-----+-...
-            .     .     .     .
-            .     .     .     .
-            .     .     .     .
-
-    the starting index--or index of MID--whichever you prefer, is 6.
-
-    subtracting WIDTH from the index moves us up one square (in the 2D representation):
-
-                -1     0     1
-            +-----+-----+-----+-...
-         -1 |  0  | [1] |  2  |
-            +-----+-----+-----+-...
-          0 |  5  |  6  |  7  |
-            +-----+-----+-----+-...
-          1 | 10  | 11  | 12  |
-            +-----+-----+-----+-...
-            .     .     .     .
-            .     .     .     .
-            .     .     .     .
-
-    then, subtracting 1 from the index moves us one square to the left:
-
-                -1     0     1
-            +-----+-----+-----+-...
-         -1 | [0] |  1  |  2  |
-            +-----+-----+-----+-...
-          0 |  5  |  6  |  7  |
-            +-----+-----+-----+-...
-          1 | 10  | 11  | 12  |
-            +-----+-----+-----+-...
-            .     .     .     .
-            .     .     .     .
-            .     .     .     .
-
-    yay! that's how the indexing works, at least. the X/YCoordStart/End variables represent the
-    desired starting and ending coordinates relative to MID, as if the square is on the border
-    or in a corner, we can't check the full 3*3 square around it. I'm sure you can figure that
-    out. this is already incredibly long.
-*/
 
 int checkForNeighbouringMines(std::vector<Square> board, int index) {
 
