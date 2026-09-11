@@ -153,7 +153,10 @@ bool checkForNeighbouringRevealed(std::vector<Square> board, int index) {
     //     }
     // }
 
-    bool hasUp, hasDown, hasLeft, hasRight = false;
+    bool hasUp      = false;
+    bool hasDown    = false;
+    bool hasLeft    = false;
+    bool hasRight   = false;
 
     if (getYCoordinateFromIndex(index) - 1 >= 0) {
         hasUp = true;
@@ -241,7 +244,7 @@ void preCalculateBorderingMines(std::vector<Square> &board) {    // calculates a
     }
 }
 
-int getIndexFromXY(int yCoordinate, int xCoordinate) {          // useful for GUI clicks? idk
+int getIndexFromYX(int yCoordinate, int xCoordinate) {          // useful for GUI clicks? idk
 
     int index = yCoordinate * WIDTH + xCoordinate;
 
@@ -286,7 +289,7 @@ void drawBoard(std::vector<Square> board) {
 
         for (int x = 0; x < WIDTH; x++) {
 
-            char squareChar = getSquareChar(board[getIndexFromXY(y, x)]);
+            char squareChar = getSquareChar(board[getIndexFromYX(y, x)]);
 
             std::cout << "  " << squareChar;
         }
@@ -296,16 +299,14 @@ void drawBoard(std::vector<Square> board) {
     std::cout << std::endl;
 }
 
+// ################################### NORMAL FUNCTIONS ############################################
+
 void floodFill(std::vector<Square> &board, int index) {
 
     std::vector<int> squareStack;       // create square stack for flood fill and add current
     squareStack.push_back(index);       // index to the stack
 
-    if (! board[index].isMine && board[index].numOfBorderingMines == 0) {
-
-        board[index].isHidden = false;      // make the clicked square empty
-
-    } else {
+    if (! board[index].isMine && board[index].numOfBorderingMines > 0) {
 
         board[index].isHidden = false;
         return;
@@ -315,23 +316,25 @@ void floodFill(std::vector<Square> &board, int index) {
 
         board[index].isHidden = false;
 
-        bool hasUp, hasDown, hasLeft, hasRight = false; // not being used currently, was thinking
-                                                        // of using for corner checks
+        bool hasUp      = false;
+        bool hasDown    = false;
+        bool hasLeft    = false;
+        bool hasRight   = false;
 
         if (getYCoordinateFromIndex(index) - 1 >= 0) {  // if has up neighbour and up-square fits 
                                                         // requirements, add the square to
                                                         // squareStack
             hasUp = true;
 
-            if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines == 0 && board[index - WIDTH].isHidden) {
+            // if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines == 0 && board[index - WIDTH].isHidden) {
 
-                squareStack.push_back(index - WIDTH);
+            //     squareStack.push_back(index - WIDTH);
             
-            } else if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines > 0) {
+            // } else if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines > 0) {
 
-                board[index - WIDTH].isHidden = false;  // or if bordering square has adj. mines but
-                                                        // is not a mine, just reveal it
-            }
+            //     board[index - WIDTH].isHidden = false;  // or if bordering square has adj. mines but
+            //                                             // is not a mine, just reveal it
+            // }
         }
 
         if (getYCoordinateFromIndex(index) + 1 <= HEIGHT - 1) { // if has down neighbour and 
@@ -339,15 +342,15 @@ void floodFill(std::vector<Square> &board, int index) {
                                                                 // add the square to squareStack
             hasDown = true;
 
-            if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines == 0 && board[index + WIDTH].isHidden) {
+            // if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines == 0 && board[index + WIDTH].isHidden) {
 
-                squareStack.push_back(index + WIDTH);
+            //     squareStack.push_back(index + WIDTH);
             
-            } else if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines > 0) {
+            // } else if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines > 0) {
 
-                board[index + WIDTH].isHidden = false;  // or if bordering square has adj. mines but
-                                                        // is not a mine, just reveal it
-            }
+            //     board[index + WIDTH].isHidden = false;  // or if bordering square has adj. mines but
+            //                                             // is not a mine, just reveal it
+            // }
         }
 
         if (getXCoordinateFromIndex(index) - 1 >= 0) {  // if has left neighbour and left-square
@@ -355,15 +358,15 @@ void floodFill(std::vector<Square> &board, int index) {
                                                         // squareStack
             hasLeft = true;
 
-            if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines == 0 && board[index - 1].isHidden) {
+            // if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines == 0 && board[index - 1].isHidden) {
 
-                squareStack.push_back(index - 1);
+            //     squareStack.push_back(index - 1);
             
-            } else if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines > 0) {
+            // } else if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines > 0) {
 
-                board[index - 1].isHidden = false;  // or if bordering square has adj. mines but is
-                                                    // not a mine, just reveal it
-            }
+            //     board[index - 1].isHidden = false;  // or if bordering square has adj. mines but is
+            //                                         // not a mine, just reveal it
+            // }
         }
 
         if (getXCoordinateFromIndex(index) + 1 <= WIDTH - 1) {  // if has right neighbour and
@@ -371,14 +374,134 @@ void floodFill(std::vector<Square> &board, int index) {
                                                                 // add the square to squareStack
             hasRight = true;
 
-            if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines == 0 && board[index + 1].isHidden) {
+            // if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines == 0 && board[index + 1].isHidden) {
 
-                squareStack.push_back(index + 1);
+            //     squareStack.push_back(index + 1);
             
-            } else if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines > 0) {
+            // } else if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines > 0) {
 
-                board[index + 1].isHidden = false;  // or if bordering square has adj. mines but is
-                                                    // not a mine, just reveal it
+            //     board[index + 1].isHidden = false;  // or if bordering square has adj. mines but is
+            //                                         // not a mine, just reveal it
+            // }
+        }
+
+        if (hasUp) {
+
+            if (! board[index - WIDTH].isMine && board[index - WIDTH].isHidden) {
+
+                if (board[index - WIDTH].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH);
+
+                } else {
+
+                    board[index - WIDTH].isHidden = false;
+                }
+            }
+        }
+
+        if (hasDown) {
+
+            if (! board[index + WIDTH].isMine && board[index + WIDTH].isHidden) {
+
+                if (board[index + WIDTH].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + WIDTH);
+
+                } else {
+
+                    board[index + WIDTH].isHidden = false;
+                }
+            }
+        }
+
+        if (hasLeft) {
+
+            if (! board[index - 1].isMine && board[index - 1].isHidden) {
+
+                if (board[index - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - 1);
+
+                } else {
+
+                    board[index - 1].isHidden = false;
+                }
+            }
+        }
+
+        if (hasRight) {
+
+            if (! board[index + 1].isMine && board[index + 1].isHidden) {
+
+                if (board[index + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + 1);
+
+                } else {
+
+                    board[index + 1].isHidden = false;
+                }
+            }
+        }
+
+        if (hasUp && hasLeft) {
+
+            if (! board[index - WIDTH - 1].isMine && board[index - WIDTH - 1].isHidden) {
+
+                if (board[index - WIDTH - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH - 1);
+
+                } else {
+
+                    board[index - WIDTH - 1].isHidden = false;
+                }
+            }
+        }
+
+        if (hasUp && hasRight) {
+
+            if (! board[index - WIDTH + 1].isMine && board[index - WIDTH + 1].isHidden) {
+
+                if (board[index - WIDTH + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH + 1);
+
+                } else {
+
+                    board[index - WIDTH + 1].isHidden = false;
+                }
+            }
+        }
+
+        if (hasDown && hasLeft) {
+
+            if (! board[index + WIDTH - 1].isMine && board[index + WIDTH - 1].isHidden) {
+
+                if (board[index + WIDTH - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + WIDTH - 1);
+
+                } else {
+
+                    board[index + WIDTH - 1].isHidden = false;
+                }
+            }
+        }
+
+        if (hasDown && hasRight) {
+
+            if (! board[index + WIDTH + 1].isMine && board[index + WIDTH + 1].isHidden) {
+
+                if (board[index + WIDTH + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + WIDTH + 1);
+
+                } else {
+
+                    board[index + WIDTH + 1].isHidden = false;
+                }
             }
         }
 
@@ -437,7 +560,7 @@ int main() {
                       << std::endl;
             std::cin >> xIn;
 
-            squareClicked(board, getIndexFromXY(yIn, xIn), gameRunning);
+            squareClicked(board, getIndexFromYX(yIn, xIn), gameRunning);
         }
 
     }
