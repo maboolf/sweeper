@@ -3,7 +3,6 @@
 
 // ######## TEMP ###########
 
-#include <string>
 #include <iostream>
 
 // ######## END TEMP #######
@@ -12,17 +11,15 @@
 // WIDTH, HEIGHT, AND DIFFICULTY WILL BE SOMEHOW HANDLED BY GUI WITH BUTTONS.
 // ----------------------------------------------------------------------------
 
-#define WIDTH 16            // num of squares vertically
-#define HEIGHT 16           // num of squares horizontally
+#define WIDTH 16            // num of squares vertically, must be > 7
+#define HEIGHT 16           // num of squares horizontally, must be > 7
 
-#define DIFFICULTY 0        // difficulty, is subtracted from the max range of the rng to make the 
-                            // chance of a given square being a mine higher. higher nums are harder.
-                            // default chance is 1/10, medium diff is 1/7, hard is 1/4.
+#define DIFFICULTY 8
 #define BOTTOMLEFT WIDTH*HEIGHT-WIDTH
 
 std::random_device rnd;
 std::mt19937 rng(rnd());
-std::uniform_int_distribution<std::mt19937::result_type> dist(1, (10 - DIFFICULTY));
+std::uniform_int_distribution<std::mt19937::result_type> dist(0, (WIDTH * HEIGHT - 1));
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ random num gen thing for mines
 
 struct Square {                 // template for a square
@@ -33,8 +30,6 @@ struct Square {                 // template for a square
     bool isMine;
     bool isFlagged;
 };
-
-
 
 
 int getYCoordinateFromIndex(int index) {    // divides index by height to see how many times it 
@@ -56,7 +51,10 @@ int checkForNeighbouringMines(std::vector<Square> board, int index) {
 
     int numOfBorderingMines = 0;
 
-    bool hasUp, hasDown, hasLeft, hasRight = false;
+    bool hasUp      = false;
+    bool hasDown    = false;
+    bool hasLeft    = false;
+    bool hasRight   = false;
 
     if (getYCoordinateFromIndex(index) - 1 >= 0) {
         hasUp = true;
@@ -92,7 +90,6 @@ int checkForNeighbouringMines(std::vector<Square> board, int index) {
             numOfBorderingMines++;
         }
     }
-
     if (hasUp && hasRight) {
         if (board[index - WIDTH + 1].isMine) {
             numOfBorderingMines++;
@@ -104,7 +101,6 @@ int checkForNeighbouringMines(std::vector<Square> board, int index) {
             numOfBorderingMines++;
         }
     }
-
     if (hasDown && hasRight) {
         if (board[index + WIDTH + 1].isMine) {
             numOfBorderingMines++;
@@ -118,92 +114,58 @@ bool checkForNeighbouringRevealed(std::vector<Square> board, int index) {
 
     bool neighboursRevealed = false;
 
-    // int checkXCoordStart, checkYCoordStart = -1;
-    // int checkXCoordEnd, checkYCoordEnd = 1;
-
-    // if ((getXCoordinateFromIndex(index) - 1) < 0) { // if the x-coord - 1 is less than zero, then
-    //     checkXCoordStart = 0;                       // skip checking the left side
-
-    // } else if ((getXCoordinateFromIndex(index) + 1) > (WIDTH - 1)) { // same as last but opposite
-    //     checkXCoordEnd = 0;
-    // }
-
-    // if ((getYCoordinateFromIndex(index) - 1) < 0) { // if the y-coord - 1 is less than zero, then
-    //     checkYCoordStart = 0;                       // skips checking the top side
-
-    // } else if ((getYCoordinateFromIndex(index) + 1) > (HEIGHT - 1)) { // same as last but opposite
-    //     checkYCoordEnd = 0;
-    // }
-
-    // for (int y = checkXCoordStart; y < checkYCoordEnd; y++) {
-
-    //     if (neighboursRevealed) {
-    //         break;
-    //     }
-
-    //     for (int x = checkXCoordStart; x < checkYCoordEnd; x++) {
-
-    //         if (y == 0 && x == 0) {
-    //             continue;
-
-    //         } else if (! board[index + (y * WIDTH + x)].isHidden) {
-    //             neighboursRevealed = true;
-    //             break;
-    //         }
-    //     }
-    // }
-
-    bool hasUp, hasDown, hasLeft, hasRight = false;
+    bool hasUp      = false;
+    bool hasDown    = false;
+    bool hasLeft    = false;
+    bool hasRight   = false;
 
     if (getYCoordinateFromIndex(index) - 1 >= 0) {
         hasUp = true;
 
-        if (! board[index - WIDTH].isHidden) {
+        if (!board[index - WIDTH].isHidden) {
             neighboursRevealed = true;
         }
     }
     if (getYCoordinateFromIndex(index) + 1 <= HEIGHT - 1) {
         hasDown = true;
 
-        if (! board[index + WIDTH].isHidden) {
+        if (!board[index + WIDTH].isHidden) {
             neighboursRevealed = true;
         }
     }
     if (getXCoordinateFromIndex(index) - 1 >= 0) {
         hasLeft = true;
 
-        if (! board[index - 1].isHidden) {
+        if (!board[index - 1].isHidden) {
             neighboursRevealed = true;
         }
     }
     if (getXCoordinateFromIndex(index) + 1 <= WIDTH - 1) {
         hasRight = true;
 
-        if (! board[index + 1].isHidden) {
+        if (!board[index + 1].isHidden) {
             neighboursRevealed = true;
         }
     }
 
     if (hasUp && hasLeft) {
-        if (! board[index - WIDTH - 1].isHidden) {
+        if (!board[index - WIDTH - 1].isHidden) {
             neighboursRevealed = true;
         }
     }
-
     if (hasUp && hasRight) {
-        if (! board[index - WIDTH + 1].isHidden) {
+        if (!board[index - WIDTH + 1].isHidden) {
             neighboursRevealed = true;
         }
     }
 
     if (hasDown && hasLeft) {
-        if (! board[index + WIDTH - 1].isHidden) {
+        if (!board[index + WIDTH - 1].isHidden) {
             neighboursRevealed = true;
         }
     }
-
     if (hasDown && hasRight) {
-        if (! board[index + WIDTH + 1].isHidden) {
+        if (!board[index + WIDTH + 1].isHidden) {
             neighboursRevealed = true;
         }
     }
@@ -211,28 +173,32 @@ bool checkForNeighbouringRevealed(std::vector<Square> board, int index) {
     return neighboursRevealed;
 }
 
-std::vector<Square> buildBoard() {          // builds board at start of game
-
+std::vector<Square> buildBoard(int &gameNumOfMines, int &displayNumOfMines) {  // builds board 
+                                                                                    // at start of 
+                                                                                    // game
     std::vector<Square> board;
 
     for (int y = 0; y < HEIGHT; y++) {
 
         for (int x = 0; x < WIDTH; x++) {
 
-            if (dist(rng) == 1) {           // if rng = 1, make the square a mine
-
-                board.push_back({true, 0, true, false});
-
-            } else {                        // otherwise the square is not a mine
-                board.push_back({true, 0, false, false});
-            }
+            board.push_back({true, 0, false, false});
         }
+    }
+
+    for (int i = 0; i < (WIDTH * HEIGHT / DIFFICULTY); i++) {
+
+        int index = dist(rng);
+        board[index].isMine = true;
+
+        gameNumOfMines++;
+        displayNumOfMines++;
     }
 
     return board;
 }
 
-void preCalculateBorderingMines(std::vector<Square> &board) {    // calculates all squares' bordering
+void preCalculateBorderingMines(std::vector<Square> &board) {   // calculates all squares' bordering
                                                                 // mines count before game start
 
     for (int index = 0; index < (WIDTH * HEIGHT - 1); index++) {
@@ -241,7 +207,7 @@ void preCalculateBorderingMines(std::vector<Square> &board) {    // calculates a
     }
 }
 
-int getIndexFromXY(int yCoordinate, int xCoordinate) {          // useful for GUI clicks? idk
+int getIndexFromYX(int yCoordinate, int xCoordinate) {          // useful for GUI clicks? idk
 
     int index = yCoordinate * WIDTH + xCoordinate;
 
@@ -250,35 +216,37 @@ int getIndexFromXY(int yCoordinate, int xCoordinate) {          // useful for GU
 
 // ################################ TEMP VISUALISATION FUNCTIONS ###################################
 
-char getSquareChar(Square square) {
+char getSquareChar(Square square, bool gameRunning) {
 
-    const char squareChars[] = " 12345678#F@";
-
+    const char squareChars[] = " 12345678";
     char squareChar;
 
-    if (! square.isHidden && ! square.isFlagged) {
+    if (square.isFlagged) {
+        squareChar = 'F';
 
-        if (! square.isMine && square.numOfBorderingMines > 0) {
+    } else if (! square.isHidden) {
+
+        if (!square.isMine && square.numOfBorderingMines > 0) {
             squareChar = squareChars[square.numOfBorderingMines];
 
-        } else if (! square.isMine && square.numOfBorderingMines == 0) {
+        } else if (!square.isMine && square.numOfBorderingMines == 0) {
             squareChar = '.';
-        
-        } else {
-            squareChar = '@';
         }
-
-    } else if (square.isFlagged) {
-        squareChar = 'F';
 
     } else {
         squareChar = '#';
     }
 
+    if (!gameRunning) {
+        if (square.isMine) {
+            squareChar = '*';
+        }
+    }
+
     return squareChar;
 }
 
-void drawBoard(std::vector<Square> board) {
+void drawBoard(std::vector<Square> board, bool gameRunning) {
 
     for (int y = 0; y < HEIGHT; y++) {
 
@@ -286,7 +254,7 @@ void drawBoard(std::vector<Square> board) {
 
         for (int x = 0; x < WIDTH; x++) {
 
-            char squareChar = getSquareChar(board[getIndexFromXY(y, x)]);
+            char squareChar = getSquareChar(board[getIndexFromYX(y, x)], gameRunning);
 
             std::cout << "  " << squareChar;
         }
@@ -296,16 +264,18 @@ void drawBoard(std::vector<Square> board) {
     std::cout << std::endl;
 }
 
-void floodFill(std::vector<Square> &board, int index) {
+// ################################### NORMAL FUNCTIONS ############################################
+
+void floodFill(std::vector<Square> &board, int index, int &numOfHiddenSquares) {
+
+    if (board[index].isFlagged) {
+        return;
+    }
 
     std::vector<int> squareStack;       // create square stack for flood fill and add current
     squareStack.push_back(index);       // index to the stack
 
-    if (! board[index].isMine && board[index].numOfBorderingMines == 0) {
-
-        board[index].isHidden = false;      // make the clicked square empty
-
-    } else {
+    if (!board[index].isMine && board[index].numOfBorderingMines > 0) {
 
         board[index].isHidden = false;
         return;
@@ -314,71 +284,146 @@ void floodFill(std::vector<Square> &board, int index) {
     while (squareStack.size() > 0) {
 
         board[index].isHidden = false;
+        numOfHiddenSquares--;
 
-        bool hasUp, hasDown, hasLeft, hasRight = false; // not being used currently, was thinking
-                                                        // of using for corner checks
+        bool hasUp      = false;
+        bool hasDown    = false;
+        bool hasLeft    = false;
+        bool hasRight   = false;
 
-        if (getYCoordinateFromIndex(index) - 1 >= 0) {  // if has up neighbour and up-square fits 
-                                                        // requirements, add the square to
-                                                        // squareStack
+        if (getYCoordinateFromIndex(index) - 1 >= 0) {
             hasUp = true;
-
-            if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines == 0 && board[index - WIDTH].isHidden) {
-
-                squareStack.push_back(index - WIDTH);
-            
-            } else if (! board[index - WIDTH].isMine && board[index - WIDTH].numOfBorderingMines > 0) {
-
-                board[index - WIDTH].isHidden = false;  // or if bordering square has adj. mines but
-                                                        // is not a mine, just reveal it
-            }
         }
 
-        if (getYCoordinateFromIndex(index) + 1 <= HEIGHT - 1) { // if has down neighbour and 
-                                                                // down-square fits requirements, 
-                                                                // add the square to squareStack
+        if (getYCoordinateFromIndex(index) + 1 <= HEIGHT - 1) {
             hasDown = true;
-
-            if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines == 0 && board[index + WIDTH].isHidden) {
-
-                squareStack.push_back(index + WIDTH);
-            
-            } else if (! board[index + WIDTH].isMine && board[index + WIDTH].numOfBorderingMines > 0) {
-
-                board[index + WIDTH].isHidden = false;  // or if bordering square has adj. mines but
-                                                        // is not a mine, just reveal it
-            }
         }
 
-        if (getXCoordinateFromIndex(index) - 1 >= 0) {  // if has left neighbour and left-square
-                                                        // fits requirements, add the square to
-                                                        // squareStack
+        if (getXCoordinateFromIndex(index) - 1 >= 0) {
             hasLeft = true;
+        }
 
-            if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines == 0 && board[index - 1].isHidden) {
+        if (getXCoordinateFromIndex(index) + 1 <= WIDTH - 1) {
+            hasRight = true;
+        }
 
-                squareStack.push_back(index - 1);
-            
-            } else if (! board[index - 1].isMine && board[index - 1].numOfBorderingMines > 0) {
+        if (hasUp) {
 
-                board[index - 1].isHidden = false;  // or if bordering square has adj. mines but is
-                                                    // not a mine, just reveal it
+            if (!board[index - WIDTH].isMine && board[index - WIDTH].isHidden && !board[index - WIDTH].isFlagged) {
+
+                if (board[index - WIDTH].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH);
+
+                } else {
+                    board[index - WIDTH].isHidden = false;
+                    numOfHiddenSquares--;
+                }
             }
         }
 
-        if (getXCoordinateFromIndex(index) + 1 <= WIDTH - 1) {  // if has right neighbour and
-                                                                // right-square fits requirements,
-                                                                // add the square to squareStack
-            hasRight = true;
+        if (hasDown) {
 
-            if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines == 0 && board[index + 1].isHidden) {
+            if (!board[index + WIDTH].isMine && board[index + WIDTH].isHidden && !board[index + WIDTH].isFlagged) {
 
-                squareStack.push_back(index + 1);
-            
-            } else if (! board[index + 1].isMine && board[index + 1].numOfBorderingMines > 0) {
+                if (board[index + WIDTH].numOfBorderingMines == 0) {
 
-                board[index + 1].isHidden = false;  // or if bordering square has adj. mines but is
-                                                    // not a mine, just reveal it
+                    squareStack.push_back(index + WIDTH);
+
+                } else {
+                    board[index + WIDTH].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasLeft) {
+
+            if (!board[index - 1].isMine && board[index - 1].isHidden && !board[index - 1].isFlagged) {
+
+                if (board[index - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - 1);
+
+                } else {
+                    board[index - 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasRight) {
+
+            if (!board[index + 1].isMine && board[index + 1].isHidden && !board[index + 1].isFlagged) {
+
+                if (board[index + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + 1);
+
+                } else {
+                    board[index + 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasUp && hasLeft) {
+
+            if (!board[index - WIDTH - 1].isMine && board[index - WIDTH - 1].isHidden && !board[index - WIDTH - 1].isFlagged) {
+
+                if (board[index - WIDTH - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH - 1);
+
+                } else {
+                    board[index - WIDTH - 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasUp && hasRight) {
+
+            if (!board[index - WIDTH + 1].isMine && board[index - WIDTH + 1].isHidden && !board[index - WIDTH + 1].isFlagged) {
+
+                if (board[index - WIDTH + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index - WIDTH + 1);
+
+                } else {
+                    board[index - WIDTH + 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasDown && hasLeft) {
+
+            if (!board[index + WIDTH - 1].isMine && board[index + WIDTH - 1].isHidden && !board[index + WIDTH - 1].isFlagged) {
+
+                if (board[index + WIDTH - 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + WIDTH - 1);
+
+                } else {
+                    board[index + WIDTH - 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
+            }
+        }
+
+        if (hasDown && hasRight) {
+
+            if (!board[index + WIDTH + 1].isMine && board[index + WIDTH + 1].isHidden && !board[index + WIDTH + 1].isFlagged) {
+
+                if (board[index + WIDTH + 1].numOfBorderingMines == 0) {
+
+                    squareStack.push_back(index + WIDTH + 1);
+
+                } else {
+                    board[index + WIDTH + 1].isHidden = false;
+                    numOfHiddenSquares--;
+                }
             }
         }
 
@@ -387,36 +432,52 @@ void floodFill(std::vector<Square> &board, int index) {
                                                         // 'last' index ('top' of stack)
         squareStack.erase(squareStack.end() - 1);   // remove first element as it is being checked
                                                     // now
-
-        drawBoard(board); // DEBUG
     }
 }
 
-bool squareClicked(std::vector<Square> &board, int index, bool gameRunning) {
+bool squareClicked(std::vector<Square> &board, int index, bool gameRunning, int &numOfHiddenSquares) {
 
     if (board[index].isMine) {
-
-        std::cout << "Game over!" << std::endl;
+        std::cout << "\n\t\tGame over!" << std::endl;
         gameRunning = false;
-
     } else {
-
-        floodFill(board, index);
+        floodFill(board, index, numOfHiddenSquares);
     }
 
     return gameRunning;
 }
 
+void squareFlagged(std::vector<Square> &board, int index, int &displayNumOfMines) {
+
+    if (board[index].isHidden && !board[index].isFlagged) {
+
+        board[index].isFlagged = true;
+        displayNumOfMines--;
+    
+    } else if (board[index].isFlagged) {
+        board[index].isFlagged = false;
+        displayNumOfMines++;
+    }
+}
+
+// ############################################ MAIN ###############################################
+
 int main() {
 
     bool gameRunning = true;
 
-    std::vector<Square> board = buildBoard();
+    int gameNumOfMines = 0;
+    int displayNumOfMines = 0;
+    int numOfHiddenSquares = WIDTH * HEIGHT;
+
+    std::vector<Square> board = buildBoard(gameNumOfMines, displayNumOfMines);
     preCalculateBorderingMines(board);
 
     while (gameRunning) {
 
-        drawBoard(board);
+        std::cout << "\n\t\tRemaining mines: " << displayNumOfMines << std::endl;
+
+        drawBoard(board, gameRunning);
 
         std::cout << "\n\tPlease input what you would like to do."
                   << "\n\t\t'1' to dig, or '2' to flag.\t" << std::endl;
@@ -428,19 +489,37 @@ int main() {
         int xIn;
 
         if (userIn == '1') {
+
             std::cout << "\n\tWhere would you like to dig?"
                       << "\n\tIf the top left is (0, 0), (y, x), input your y value:\t"
                       << std::endl;
             std::cin >> yIn;
-
             std::cout << "\n\tNow, please input your x-value:\t"
                       << std::endl;
             std::cin >> xIn;
 
-            squareClicked(board, getIndexFromXY(yIn, xIn), gameRunning);
+            gameRunning = squareClicked(board, getIndexFromYX(yIn, xIn), gameRunning, numOfHiddenSquares);
+        
+        } else if (userIn == '2') {
+
+            std::cout << "\n\tWhere would you like to flag?"
+                      << "\n\tIf the top left is (0, 0), (y, x), input your y value:\t"
+                      << std::endl;
+            std::cin >> yIn;
+            std::cout << "\n\tNow, please input your x-value:\t"
+                      << std::endl;
+            std::cin >> xIn;
+
+            squareFlagged(board, getIndexFromYX(yIn, xIn), displayNumOfMines);
         }
 
+        if (numOfHiddenSquares == gameNumOfMines) {
+            std::cout << "\n\t\tYou win!" << std::endl;
+            gameRunning = false;
+        }
     }
+
+    drawBoard(board, gameRunning);
 
     return 0;
 }
