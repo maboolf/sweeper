@@ -22,6 +22,9 @@ std::mt19937 rng(rnd());
 std::uniform_int_distribution<std::mt19937::result_type> dist(0, (WIDTH * HEIGHT - 1));
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ random num gen thing for mines
 
+int width = 16;
+int height = 16;
+
 struct Square {                 // template for a square
 
     bool isHidden;              // state(s)
